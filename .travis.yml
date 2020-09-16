@@ -8,27 +8,37 @@ language: generic
 # Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.stack
-  # - $HOME/.local/bin # Reundant? This is from rattletrap. I believe this is connected with his smarter way of installing stack, so I should probably use this only if I use his install-stack.sh in before_install step, which I should probably do because I believe it basically skips installing and downloading of stack every time again.
-  # This repo also has interestnig way to go about it: https://github.com/simonmichael/hledger/blob/master/.travis.yml .
+    - $HOME/.ghc
+    - $HOME/.cabal
+    - $HOME/.stack
+    - $TRAVIS_BUILD_DIR/waspc/.stack-work # To cache build artifacts from stack's previous build, so build goes faster.
+    - $HOME/.local/bin # To cache binaries I installed here (e.g. stack).
 
-# Ensure necessary system libraries are present
+# Ensure necessary system libraries are present.
 addons:
   apt:
     packages:
       - libgmp-dev
 
 before_install:
-  # Download and unpack the stack executable
-  - mkdir -p ~/.local/bin
-  - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  - mkdir -p ~/.local/bin && export PATH=$HOME/.local/bin:$PATH
+  # Download and unpack the stack executable and put it into ~/.local/bin (and therefore on PATH).
+  - |
+    if [ "$TRAVIS_OS_NAME" = "osx" ]
+    then
+      travis_retry curl --insecure -L https://get.haskellstack.org/stable/osx-x86_64.tar.gz | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+    else
+      travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+    fi
+  # TODO: I could check if stack already exists, and in that case, skip downloading it, and instead run `stack upgrade`. With `sudo` if needed.
+  # - if [[ ! -x ~/.local/bin/stack ]]; then ...<install-stack>...; else stack upgrade; fi
 
 install:
-  - cd waspc
+  - cd $TRAVIS_BUILD_DIR/waspc
   # Build dependencies.
   # --no-terminal because Stack does some fancy stuff with Terminal which Travis does not support (is this still true?).
   # --install-ghc just tells stack to install ghc if it is missing (normally we would do it manually with stack setup).
+  # --only-dependencies means only wasp dependencies will be built, no wasp source code will be built at this moment.
   - stack --no-terminal --install-ghc test --only-dependencies
 
 script:

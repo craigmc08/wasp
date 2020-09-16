@@ -1,0 +1,46 @@
+os:
+  - linux
+  - osx
+
+# Do not choose a language; we provide our own build tools.
+language: generic
+
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.stack
+  # - $HOME/.local/bin # Reundant? This is from rattletrap. I believe this is connected with his smarter way of installing stack, so I should probably use this only if I use his install-stack.sh in before_install step, which I should probably do because I believe it basically skips installing and downloading of stack every time again.
+  # This repo also has interestnig way to go about it: https://github.com/simonmichael/hledger/blob/master/.travis.yml .
+
+# Ensure necessary system libraries are present
+addons:
+  apt:
+    packages:
+      - libgmp-dev
+
+before_install:
+  # Download and unpack the stack executable
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+install:
+  # Build dependencies.
+  # --no-terminal because Stack does some fancy stuff with Terminal which Travis does not support (is this still true?).
+  # --install-ghc just tells stack to install ghc if it is missing (normally we would do it manually with stack setup).
+  - stack --no-terminal --install-ghc test --only-dependencies
+
+script:
+  # Build the package and its tests.
+  - stack --no-terminal test
+
+# This is stuf from rattletrap, I should look into how to add this:
+# after_success:
+#   - stack exec runghc tools/attach-binary.hs
+
+# deploy:
+#   provider: script
+#   on:
+#     tags: true
+#   skip_cleanup: true
+#   script: yes | stack upload .

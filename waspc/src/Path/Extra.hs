@@ -7,7 +7,6 @@ import Control.Exception (assert)
 import qualified System.FilePath.Posix as FPP
 import Path
 
-
 -- | For given posix path P, returns posix path P', such that (terminal pseudocode incoming)
 -- `pwd == (cd P && cd P' && pwd)`, or to put it differently, such that
 -- `cd P && cd P'` is noop (does nothing).

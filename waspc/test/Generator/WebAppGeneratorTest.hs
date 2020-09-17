@@ -55,7 +55,7 @@ spec_WebAppGenerator = do
                       , "router.js"
                       , "serviceWorker.js"
                       , "store" </> "index.js"
-                      , "store/middleware" </> "logger.js"
+                      , "store" </> "middleware" </> "logger.js"
                       , testEntityDstDirInSrc </> "actions.js"
                       , testEntityDstDirInSrc </> "actionTypes.js"
                       , testEntityDstDirInSrc </> "state.js"

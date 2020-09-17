@@ -1,5 +1,9 @@
 module Fixtures where
 
+import qualified Path as P
+import Data.Maybe (fromJust)
+import qualified System.Info
+
 import Wasp
 import qualified Wasp.EntityForm as EF
 import qualified Wasp.Route as RouteAST
@@ -70,3 +74,8 @@ formFieldIsDone = GEF.FormFieldTemplateData
     , GEF._fieldPlaceholder = Nothing
     , GEF._fieldLabel = Nothing
     }
+
+fpRoot :: P.Path P.Abs P.Dir
+fpRoot = fromJust $ P.parseAbsDir $ if take 3 System.Info.os `elem` ["Win", "win"]
+                                    then "C:\\"
+                                    else "/"

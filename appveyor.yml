@@ -30,10 +30,9 @@ install:
 
 test_script:
   - stack setup > nul # Due it silently due to lot of not very interesting output.
-  # Ugly echo "" hack is to avoid complaints about 0 being an invalid file descriptor.
   - stack build --test --only-dependencies
   - stack build --test --no-run-tests
-  # - stack build --test # TODO: Uncomment this once I fix tests.
+  - stack build --test
 
 # TODO: Uncomment stuff bellow once I get basic things working (and cached).
 

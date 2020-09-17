@@ -8,7 +8,7 @@ import Data.Text (Text, pack, unpack)
 
 import StrongPath (Path, Rel, File, Dir, (</>))
 import qualified StrongPath as SP
-import Path.Extra (reversePath)
+import Path.Extra (reversePosixPath)
 import qualified Generator.FileDraft as FD
 import qualified ExternalCode as EC
 import Generator.ExternalCodeGenerator.Common (GeneratedExternalCodeDir)
@@ -45,6 +45,6 @@ resolveJsFileWaspImportsForExtCodeDir extCodeDirInAppSrcDir jsFileDstPathInExtCo
     -- https://hackage.haskell.org/package/regex-posix-0.96.0.0/docs/Text-Regex-Posix-String.html
     TR.subRegex (TR.mkRegex "(from +['\"])@wasp/")
                 (unpack jsFileText)
-                ("\\1" ++ reversePath (SP.toPathRelDir $ SP.parent jsFileDstPathInAppSrcDir) ++ "/")
+                ("\\1" ++ reversePosixPath (SP.toPathRelDir $ SP.parent jsFileDstPathInAppSrcDir) ++ "/")
   where
     jsFileDstPathInAppSrcDir = extCodeDirInAppSrcDir </> jsFileDstPathInExtCodeDir

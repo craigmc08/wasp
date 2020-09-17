@@ -1,0 +1,42 @@
+build: off # Tells AppVeyor to not look for a Visual studio project nor to run arbitraty scripted actions via build_script.
+
+platform: x64
+
+version: '{build}'
+
+clone_folder: c:/wasp # This is where wasp repo will be cloned into.
+
+environment:
+  GITHUB_TOKEN:
+    secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
+  PATH: c:/bin;%PATH%
+  STACK_ROOT: c:/stack
+  TMP: c:/tmp # https://github.com/haskell/cabal/issues/5386
+
+# `a -> b` means that cached item `a` will be invalidated if `b` changes.
+# Important: AppVeyor has 1GB limit on cache for free account.
+# TODO: I copied this from rattletrap, figure out if I should change smth
+# regarding caching (change dependencies? Add .stack-work?
+cache:
+  - c:/stack -> waspc/stack.yaml
+  - c:/Users/appveyor/AppData/Local/Programs/stack -> waspc/stack.yaml
+
+install:
+  - ps: cd waspc
+  # Install stack.
+  - ps: |
+      if (Test-Path c:/bin/stack.exe) {} else {
+        curl -OutFile stack.zip -Uri https://get.haskellstack.org/stable/windows-x86_64.zip
+        7z x stack.zip stack.exe
+        mkdir c:/bin
+        mv stack.exe c:/bin
+      }
+  # - ps: tools/install-github-release.ps1 # TODO: Uncomment if I will be using attach-binary.hs for deploying, but maybe I can just use `deploy` from AppVeyor.
+
+test_script:
+  - ps: stack --install-ghc test --only-dependencies
+  - ps: stack test
+
+# TODO: Instead of this, use `deploy` of AppVeyor?
+# on_success:
+#   - ps: stack exec runghc tools/attach-binary.hs

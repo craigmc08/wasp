@@ -14,4 +14,4 @@ spec_reversePosixPath = do
     [reldir|./foo/bar/./test|] ~> "../../.."
   where
     path ~> expectedReversedPath = it ((show path) ++ " -> " ++ expectedReversedPath) $ do
-        PE.reversePosixPath path `shouldBe` expectedReversedPath
+        PE.reversePosixPath (PE.toPosixFilePath path) `shouldBe` expectedReversedPath

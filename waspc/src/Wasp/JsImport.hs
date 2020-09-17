@@ -13,6 +13,8 @@ import ExternalCode (SourceExternalCodeDir)
 data JsImport = JsImport
     { _defaultImport :: !(Maybe String)
     , _namedImports :: ![String]
+    -- TODO: Probably this should always be posix path, since it is JS import path.
+    --   We should use Path.Posix while parsing it!? Or should we use smth else?
     , _from :: !(Path (Rel SourceExternalCodeDir) File)
     } deriving (Show, Eq)
 

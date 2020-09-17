@@ -28,21 +28,11 @@ install:
       mkdir c:/bin
       mv stack.exe c:/bin
 
-# build_script:
-#   - ps: stack --no-terminal --install-ghc test --only-dependencies
-#   - ps: stack --no-terminal build
-
-# after_build:
-#   - ps: mkdir appveyor-releases/
-#   - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" "appveyor-releases/wasp-windows.exe"
-
-# test_script:
-#   - ps: stack --no-terminal test
-
 test_script:
-  - ps: stack --version
-  - ps: stack --no-terminal --install-ghc test --only-dependencies # TODO: Move this to build_script? In that case set `build` to `build_script` or smth like that?
-  - ps: stack --no-terminal test
+  - ps: stack setup > nul # Due it silently due to lot of not very interesting output.
+  # Ugly echo "" hack is to avoid complaints about 0 being an invalid file descriptor.
+  - ps: echo "" | stack --no-terminal test --only-dependencies
+  - ps: echo "" | stack --no-terminal test
 
 after_test:
   - ps: mkdir appveyor-releases/

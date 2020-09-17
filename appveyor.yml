@@ -40,6 +40,7 @@ install:
 #   - ps: stack --no-terminal test
 
 test_script:
+  - ps: stack --version
   - ps: stack --no-terminal --install-ghc test --only-dependencies # TODO: Move this to build_script? In that case set `build` to `build_script` or smth like that?
   - ps: stack --no-terminal test
 

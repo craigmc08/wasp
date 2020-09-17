@@ -7,8 +7,6 @@ version: '{build}'
 clone_folder: c:/wasp # This is where wasp repo will be cloned into.
 
 environment:
-  GITHUB_TOKEN:
-    secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
   PATH: c:/bin;%PATH%
   STACK_ROOT: c:/stack
   TMP: c:/tmp # https://github.com/haskell/cabal/issues/5386
@@ -23,20 +21,30 @@ cache:
 
 install:
   - ps: cd waspc
-  # Install stack.
+  # Install latest stable stack.
   - ps: |
-      if (Test-Path c:/bin/stack.exe) {} else {
-        curl -OutFile stack.zip -Uri https://get.haskellstack.org/stable/windows-x86_64.zip
-        7z x stack.zip stack.exe
-        mkdir c:/bin
-        mv stack.exe c:/bin
-      }
-  # - ps: tools/install-github-release.ps1 # TODO: Uncomment if I will be using attach-binary.hs for deploying, but maybe I can just use `deploy` from AppVeyor.
+      curl -OutFile stack.zip -Uri https://get.haskellstack.org/stable/windows-x86_64.zip
+      7z x stack.zip stack.exe
+      mkdir c:/bin
+      mv stack.exe c:/bin
 
 test_script:
-  - ps: stack --install-ghc test --only-dependencies
-  - ps: stack test
+  - ps: stack --no-terminal --install-ghc test --only-dependencies # TODO: Move this to build_script? In that case set `build` to `build_script` or smth like that?
+  - ps: stack --no-terminal test
 
-# TODO: Instead of this, use `deploy` of AppVeyor?
-# on_success:
-#   - ps: stack exec runghc tools/attach-binary.hs
+after_test:
+  - ps: mkdir appveyor-releases/
+  - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" "appveyor-releases/wasp-windows.exe"
+
+artifacts:
+  - path: wasp/appveyor-releases/wasp-windows.exe
+  - name: wasp-windows.exe
+
+deploy:
+  provider: Github
+  auth_token:
+    secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
+  #description: "Windows exe" # Allegedly this is mandatory? Try without it.
+  artifact: wasp-windows.exe
+  force_update: true # Adds files to release even if it already exists.
+

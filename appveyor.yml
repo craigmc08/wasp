@@ -29,10 +29,10 @@ install:
       mv stack.exe c:/bin
 
 test_script:
-  - ps: stack setup > nul # Due it silently due to lot of not very interesting output.
+  - stack setup > nul # Due it silently due to lot of not very interesting output.
   # Ugly echo "" hack is to avoid complaints about 0 being an invalid file descriptor.
-  - ps: echo "" | stack --no-terminal test --only-dependencies
-  - ps: echo "" | stack --no-terminal test
+  - echo "" | stack --no-terminal test --only-dependencies
+  - echo "" | stack --no-terminal test
 
 after_test:
   - ps: mkdir appveyor-releases/

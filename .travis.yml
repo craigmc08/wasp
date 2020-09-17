@@ -34,7 +34,7 @@ before_install:
     else
       travis_retry curl -L https://get.haskellstack.org/stable/linux-x86_64.tar.gz | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
     fi
-  - echo "Stack version:" `stack --numeric-version`
+  - stack --numeric-version
 
 install:
   - cd $TRAVIS_BUILD_DIR/waspc
@@ -45,16 +45,20 @@ install:
   - stack --no-terminal --install-ghc test --only-dependencies
 
 script:
-  # Build the package and its tests.
+  # Build the wasp source code and its tests. Dependencies were already built before.
   - stack --no-terminal test
 
-# This is stuf from rattletrap, I should look into how to add this:
-# after_success:
-#   - stack exec runghc tools/attach-binary.hs
+after_success:
+  - mkdir travis-releases/
+  - mv "$(stack path --local-install-root)/bin/wasp" "travis-releases/wasp-${TRAVIS_OS_NAME}"
 
-# deploy:
-#   provider: script
-#   on:
-#     tags: true
-#   skip_cleanup: true
-#   script: yes | stack upload .
+deploy:
+  provider: releases
+  api_key:
+    # Encrypted github access key.
+    secure: BvTKj98pSOsYcU0V8cDo8XrGRCb/VOhlN5aRO+LvvvX8JFIfWrUmnIqD1wlCm0PkOIQm8Wm/vJUZTAxJn57PRK4puPZlZ6zWJR2Oys/Xb5TOiOPXCqRmyyaMUwWyORVm/xI4/zmQVRshrPWlfOhGGBs98cxSgxvmW4BJZ/Zcs0+zvYjikUKUkh2BZmXVxn7t9ZQrf0IYLmRoVf0vReYGplzCLZs8PKZ130kjsGmP1TIakWSmpXzCfZIEcC9n4/jdm6vsYxUbYSi0PRNp99FJoIKRwinFnpyp2hXkohZM5MbP1cQ8kxRsA9hczJ5NWqkS14I58dta64IP/NnA2Xl0q2Ie3PEmwaJMrRm6paIg3AASCy2jt7sVG2/vigon8p6wQk2+PbOaDqd147bDJ+Ms+vgTsDdhGl2zYTHCM82jjEDnYRr51DAMfJPV+4eXA8PKdh0q1A/wTRLDCtArPIi+DVCOYH62VnBpbtKabh5Lqo6nQ3cEod2Ux8pYtxAcDgN2txbUrXEpf+Ivs+HSWD8bTNF8OOSsihurU6DV3qH1HQSxg7upQHyaJ9ScHlLK0EgUXWtCyb8zN3NWKo4LAT0V6YBWBRFC8lFqy35PQn70wWGAR7RyTUdXD4PkER+2lAHjZ/WovNeQtlMpG0Yc+9BDfE/o8XiMa28wF/+QyRiQzX4=
+  file: "travis-releases/wasp-${TRAVIS_OS_NAME}"
+  skip_cleanup: true
+  on:
+    # Whenever we push a tagged commit, binary will be deployed to releases.
+    tags: true

@@ -25,7 +25,7 @@ spec_CopyFileDraft = do
                 (dstDir, dstPath, srcPath) =
                     ( SP.fromPathAbsDir $ fpRoot P.</> [P.reldir|a/b|]
                     , SP.fromPathRelFile [P.relfile|c/d/dst.txt|]
-                    , SP.fromPathAbsFile [P.absfile|/e/src.txt|]
+                    , SP.fromPathAbsFile $ fpRoot P.</> [P.relfile|e/src.txt|]
                     )
                 fileDraft = createCopyFileDraft dstPath srcPath
                 expectedSrcPath = srcPath

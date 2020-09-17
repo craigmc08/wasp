@@ -27,5 +27,5 @@ spec_StrongPath = do
     it "Paths are unchanged when packed and unpacked" $ do
         (P.toFilePath $ SP.toPathRelFile $ SP.fromPathRelFile [P.relfile|some/file.txt|]) `shouldBe` "some/file.txt"
         (P.toFilePath $ SP.toPathRelDir $ SP.fromPathRelDir [P.reldir|some/dir/|]) `shouldBe` "some/dir/"
-        (P.toFilePath $ SP.toPathAbsFile $ SP.fromPathAbsFile [P.absfile|/some/file.txt|]) `shouldBe` "/some/file.txt"
+        (P.toFilePath $ SP.toPathAbsFile $ SP.fromPathAbsFile $ fpRoot P.</> [P.relfile|some/file.txt|]) `shouldBe` "/some/file.txt"
         (P.toFilePath $ SP.toPathAbsDir $ SP.fromPathAbsDir $ fpRoot P.</> [P.reldir|some/dir/|]) `shouldBe` "/some/dir/"

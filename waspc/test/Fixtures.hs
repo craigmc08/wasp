@@ -2,7 +2,7 @@ module Fixtures where
 
 import qualified Path as P
 import Data.Maybe (fromJust)
-import qualified System.Info
+import qualified System.FilePath as FP
 
 import Wasp
 import qualified Wasp.EntityForm as EF
@@ -76,6 +76,4 @@ formFieldIsDone = GEF.FormFieldTemplateData
     }
 
 fpRoot :: P.Path P.Abs P.Dir
-fpRoot = fromJust $ P.parseAbsDir $ if take 3 System.Info.os `elem` ["Win", "win"]
-                                    then "C:\\"
-                                    else "/"
+fpRoot = fromJust $ P.parseAbsDir $ if FP.pathSeparator == '\\' then "C:\\" else "/"

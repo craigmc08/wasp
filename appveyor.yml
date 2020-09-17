@@ -47,7 +47,7 @@ deploy:
   provider: Github
   auth_token:
     secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
-  #description: "Windows exe" # Allegedly this is mandatory? Try without it.
+  description: "Automatic release"
   artifact: wasp-windows.exe
   force_update: true # Adds files to release even if it already exists.
   on:

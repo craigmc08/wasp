@@ -34,23 +34,21 @@ test_script:
   - stack build --test --no-run-tests
   - stack build --test
 
-# TODO: Uncomment stuff bellow once I get basic things working (and cached).
+after_test:
+  - ps: mkdir appveyor-releases/
+  - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" "appveyor-releases/wasp-windows.exe"
 
-# after_test:
-#   - ps: mkdir appveyor-releases/
-#   - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" "appveyor-releases/wasp-windows.exe"
+artifacts:
+  - path: wasp/appveyor-releases/wasp-windows.exe
+    name: wasp-windows.exe
 
-# artifacts:
-#   - path: wasp/appveyor-releases/wasp-windows.exe
-#     name: wasp-windows.exe
-
-# deploy:
-#   provider: Github
-#   auth_token:
-#     secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
-#   description: "Automatic release"
-#   artifact: wasp-windows.exe
-#   force_update: true # Adds files to release even if it already exists.
-#   on:
-#     APPVEYOR_REPO_TAG: true # Deploy on tag push only.
+deploy:
+  provider: Github
+  auth_token:
+    secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
+  description: "Automatic release"
+  artifact: wasp-windows.exe
+  force_update: true # Adds files to release even if it already exists.
+  on:
+    APPVEYOR_REPO_TAG: true # Deploy on tag push only.
 

@@ -6,6 +6,64 @@
 HOME_LOCAL_BIN="$HOME/.local/bin"
 WASP_TEMP_DIR=""
 
+main() {
+    trap cleanup_temp_dir EXIT
+    install_based_on_os
+}
+
+install_based_on_os() {
+    case "$(uname)" in
+        "Linux")
+            install_from_bin_package "linux-x86_64.tar.gz"
+            ;;
+        "Darwin")
+            install_from_bin_package "osx-x86_64.tar.gz"
+            ;;
+        *)
+            die "Sorry, this installer does not support your operating system: $(uname)."
+    esac
+}
+
+# Download a Wasp binary package and install it in $HOME_LOCAL_BIN.
+install_from_bin_package() {
+    PACKAGE_URL="https://github.com/wasp-lang/wasp/releases/latest/download/$1"
+    check_dl_tools
+    make_temp_dir
+
+    info "Downloading binary package to temporary dir and unpacking it there..."
+    dl_to_file "$PACKAGE_URL" "$WASP_TEMP_DIR/$1"
+    mkdir -p "$WASP_TEMP_DIR/wasp"
+    if ! tar xzf "$WASP_TEMP_DIR/$1" -C "$WASP_TEMP_DIR/wasp"; then
+      die "Unpacking binary package failed."
+    fi
+
+    DEST_DIR="$HOME_LOCAL_BIN"
+    if [ ! -d "$DEST_DIR" ]; then
+        info "$DEST_DIR does not exit, creating it..."
+        # First try to create directory as current user, then try with sudo if it fails.
+        if ! mkdir -p "$DEST_DIR" 2>/dev/null; then
+            die "Could not create directory: $DEST_DIR."
+        fi
+    fi
+
+    info "Installing Wasp files to $DEST_DIR..."
+    if ! mv "$WASP_TEMP_DIR/wasp" "$DEST_DIR/wasp"; then
+        die "Install to $DEST_DIR failed."
+    fi
+    if ! chmod +x "$DEST_DIR/wasp/wasp"; then
+        die "Failed to make $DEST_DIR/wasp/wasp executable."
+    fi
+
+    info "Wasp has been successfully installed to: $DEST_DIR/wasp"
+    info ""
+
+    if ! on_path "$(dirname $DEST_DIR)"; then
+        info "WARNING: It looks like '$(dirname $DEST_DIR)' is not on your PATH"
+             ", add it if you want to be able to invoke `wasp` command directly from anywhere."
+        info ""
+    fi
+}
+
 # Creates a temporary directory, which will be cleaned up automatically
 # when the script finishes
 make_temp_dir() {
@@ -27,39 +85,20 @@ die() {
     exit 1
 }
 
-do_osx_install() {
-    info "Using generic bindist..."
-    info ""
-    install_64bit_osx_binary
-    info "NOTE: You may need to run 'xcode-select --install' and/or"
-    info "      'open /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg'"
-    info "      to set up the Xcode command-line tools, which Stack uses."
-    info ""
+info() {
+    echo -e "\033[0;33m{= Wasp installer =}\033[0m" "$@"
 }
 
-# Determine operating system and attempt to install.
-do_os() {
-    case "$(uname)" in
-        "Linux")
-            set_default_dest
-            install_from_bindist "linux-x86_64.tar.gz"
-            ;;
-        "Darwin")
-            set_default_dest
-            install_from_bindist "osx-x86_64.tar.gz"
-            ;;
-        *)
-            die "Sorry, this installer does not support your operating system: $(uname)."
-    esac
-}
 
 # Download a URL to file using 'curl' or 'wget'.
 dl_to_file() {
     if has_curl ; then
-        if ! curl ${QUIET:+-sS} -L -o "$2" "$1"; then
+        echo "$1" "$2" "CURL"
+        if ! curl ${QUIET:+-sS} --fail -L -o "$2" "$1"; then
             die "curl download failed: $1"
         fi
     elif has_wget ; then
+        echo "$1" "$2" "WGET"
         if ! wget ${QUIET:+-q} "-O$2" "$1"; then
             die "wget download failed: $1"
         fi
@@ -80,51 +119,6 @@ check_dl_tools() {
     fi
 }
 
-# Download a Wasp bindist and install it in /usr/local/bin/wasp.
-install_from_bindist() {
-    RELEASE_URL="https://github.com/wasp-lang/wasp/releases/latest/download"
-    check_dl_tools
-    make_temp_dir
-
-    dl_to_file "$RELEASE_URL" "$WASP_TEMP_DIR/$1.bindist"
-    mkdir -p "$WASP_TEMP_DIR/$1"
-    if ! tar xzf "$WASP_TEMP_DIR/$1.bindist" -C "$WASP_TEMP_DIR/$1"; then
-      die "Unpacking bindist failed"
-    fi
-    # TODO: Stopped here.
-    WASP_TEMP_EXE="$WASP_TEMP_DIR/$(basename "$DEST")" # TODO: What is this DEST?
-    mv "$WASP_TEMP_DIR/$1"/*/wasp "$WASP_TEMP_EXE"
-    destdir="$(dirname "$DEST")"
-    if [ ! -d "$destdir" ]; then
-        info "$destdir directory does not exist; creating it..."
-        # First try to create directory as current user, then try with sudo if it fails.
-        if ! mkdir -p "$destdir" 2>/dev/null; then
-            if ! sudocmd "create the destination directory" mkdir -p "$destdir"; then
-                die "Could not create directory: $DEST"
-            fi
-        fi
-    fi
-    # First attempt to install 'stack' as current user, then try with sudo if it fails
-    info "Installing Stack to: $DEST..."
-    if ! install -c -m 0755 "$STACK_TEMP_EXE" "$destdir" 2>/dev/null; then
-      if ! sudocmd "copy 'stack' to the destination directory" install -c -o 0 -g 0 -m 0755 "$STACK_TEMP_EXE" "$destdir"; then
-        die "Install to $DEST failed"
-      fi
-    fi
-
-    post_install_separator
-    info "Stack has been installed to: $DEST"
-    info ""
-
-    check_dest_on_path
-}
-
-install_x86_64_linux_binary() {
-}
-
-install_64bit_osx_binary() {
-}
-
 # Check whether 'wget' command exists
 has_wget() {
     has_cmd wget
@@ -142,11 +136,9 @@ has_cmd() {
 
 # Check whether the given path is listed in the PATH environment variable
 on_path() {
-    echo ":$PATH:" | grep -q :"$1":
+    # TODO: Contribute this back to stack?
+    # NOTE: We normalize them before comparison by expanding ~ in both PATH and in argument.
+    echo :"${PATH//:\~/:$HOME}": | grep -q :"${1/#\~/$HOME}":
 }
 
-trap cleanup_temp_dir EXIT
-
-check_stack_installed
-do_os
-check_home_local_bin_on_path
+main

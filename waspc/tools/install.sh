@@ -14,15 +14,18 @@ main() {
 install_based_on_os() {
     case "$(uname)" in
         "Linux")
-            install_from_bin_package "linux-x86_64.tar.gz"
+            install_from_bin_package "wasp-linux-x86_64.tar.gz"
             ;;
         "Darwin")
-            install_from_bin_package "osx-x86_64.tar.gz"
+            install_from_bin_package "wasp-osx-x86_64.tar.gz"
             ;;
         *)
             die "Sorry, this installer does not support your operating system: $(uname)."
     esac
 }
+
+# TODO: Add option to specify which release to download.
+
 
 # Download a Wasp binary package and install it in $HOME_LOCAL_BIN.
 install_from_bin_package() {
@@ -50,6 +53,10 @@ install_from_bin_package() {
     if ! mv "$WASP_TEMP_DIR/wasp" "$DEST_DIR/wasp"; then
         die "Install to $DEST_DIR failed."
     fi
+
+    # TODO: I should make sure here that $DEST_DIR is abs path,
+    #   which I am pretty sure is not at the moment.
+    echo -e "#!/usr/bin/env bash\nwaspc_datadir=$DEST_DIR/wasp/data $DEST_DIR/wasp/wasp-bin" > "$DEST_DIR/wasp/wasp"
     if ! chmod +x "$DEST_DIR/wasp/wasp"; then
         die "Failed to make $DEST_DIR/wasp/wasp executable."
     fi

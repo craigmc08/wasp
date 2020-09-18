@@ -14,7 +14,7 @@ import qualified Parser.Common
 -- Example of input: "@ext/some/file.txt". Output would be: "some/file.txt".
 extCodeFilePathString :: Parser (PPosix.Path PPosix.Rel PPosix.File)
 extCodeFilePathString = do
-    path <- Parser.Common.relFilePathString
+    path <- Parser.Common.relPosixFilePathString
     maybe (unexpected $ "string \"" ++ (show path) ++ "\": External code file path should start with \"@ext/\".")
           return
           (PPosix.stripProperPrefix [PPosix.reldir|@ext|] path)

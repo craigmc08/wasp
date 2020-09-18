@@ -31,8 +31,8 @@ install:
 test_script:
   - stack setup > nul # Due it silently due to lot of not very interesting output.
   - stack build --test --only-dependencies
-  - stack build --test --no-run-tests
-  - stack build --test
+  # - stack build --test --no-run-tests
+  # - stack build --test
 
 # TODO: Uncomment stuff bellow once I get basic things working (and cached).
 

@@ -66,9 +66,7 @@ deploy:
   auth_token:
     secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
   description: "Automatic release"
-  artifact:
-    - wasp-windows.zip
-    - wasp-windows2.zip
+  artifact: wasp-windows.zip
   force_update: true # Adds files to release even if it already exists.
   on:
     APPVEYOR_REPO_TAG: true # Deploy on tag push only.

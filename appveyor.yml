@@ -46,17 +46,29 @@ after_test:
   - ps: mv "$(stack path --project-root)/data" binary-package/data
   - ps: mv tools/wasp.ps1 binary-package/wasp.ps1
   - cmd: 7z a wasp-windows.zip %APPVEYOR_BUILD_FOLDER%\waspc\binary-package\*
+  - cmd: cd
+  - cmd: dir
+  - cmd: echo %APPVEYOR_BUILD_FOLDER%
+  # TODO: Maybe I have to make artifact in after_build?
 
 artifacts:
-  - path: wapsc/wasp-windows.zip
+  - path: wapsc\wasp-windows.zip
     name: wasp-windows.zip
+  - path: waspc\binary-package
+    name: wasp-windows2.zip
+  - path: binary-package
+    name: wasp-windows3.zip
+  - path: binary-package
+    name: maybethisworks
 
 deploy:
   provider: GitHub
   auth_token:
     secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
   description: "Automatic release"
-  artifact: wasp-windows.zip
+  artifact:
+    - wasp-windows.zip
+    - wasp-windows2.zip
   force_update: true # Adds files to release even if it already exists.
   on:
     APPVEYOR_REPO_TAG: true # Deploy on tag push only.

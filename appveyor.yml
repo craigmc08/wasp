@@ -45,7 +45,7 @@ after_test:
   - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" binary-package/wasp-windows.exe
   - ps: mv "$(stack path --project-root)/data" binary-package/data
   - ps: mv tools/wasp.ps1 binary-package/wasp.ps1
-  - ps: Compress-Archive binary-package wasp-windows.zip
+  - cmd: 7z a wasp-windows.zip %APPVEYOR_BUILD_FOLDER%\waspc\binary-package\*
 
 artifacts:
   - path: wapsc/wasp-windows.zip

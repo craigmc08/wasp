@@ -48,7 +48,7 @@ after_test:
   - ps: Compress-Archive binary-package wasp-windows.zip
 
 artifacts:
-  - path: wasp-windows.zip
+  - path: wapsc/wasp-windows.zip
     name: wasp-windows.zip
 
 deploy:

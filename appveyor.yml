@@ -45,21 +45,19 @@ after_test:
   - ps: mv "$(stack path --local-install-root)/bin/wasp.exe" binary-package/wasp-windows.exe
   - ps: mv "$(stack path --project-root)/data" binary-package/data
   - ps: mv tools/wasp.ps1 binary-package/wasp.ps1
-  - cmd: 7z a wasp-windows.zip %APPVEYOR_BUILD_FOLDER%\waspc\binary-package\*
-  - cmd: dir
 
 artifacts:
-  - path: waspc\wasp-windows.zip
-    name: wasp-windows.zip
+  # Since waspc\binary-package is a directory, AppVeyor will zip it for us and
+  # name it by the name of the artifact + .zip.
   - path: waspc\binary-package
-    name: wasp-windows2.zip
+    name: wasp-win-x86_64
 
 deploy:
   provider: GitHub
   auth_token:
     secure: kyc1YtELeuOSAvRQtg6ppmMWYkbsP16z3eBRu09YozknJEXySteOJTHUUyaMocjC
   description: "Automatic release"
-  artifact: wasp-windows.zip, wasp-windows2.zip
+  artifact: wasp-win-x86_64
   force_update: true # Adds files to release even if it already exists.
   on:
     APPVEYOR_REPO_TAG: true # Deploy on tag push only.
